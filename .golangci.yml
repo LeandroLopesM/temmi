@@ -1,0 +1,33 @@
+version: "2"
+
+linters:
+    default: all
+    enable:
+        - gomodguard_v2
+        - exhaustruct_v5
+    disable:
+        - wrapcheck
+        - wsl_v5
+        - wsl
+        - gomodguard
+        - nlreturn
+        - lll
+        - godot
+        - exhaustruct
+        - noinlineerr
+        - ireturn
+        - forbidigo
+        - depguard
+        - cyclop
+        - err113
+        - varnamelen
+        - gochecknoglobals
+        - mnd
+    settings:
+        godoclint:
+            disable:
+                - start-with-name
+        revive:
+            rules:
+                - name: dot-imports
+                  disabled: true
