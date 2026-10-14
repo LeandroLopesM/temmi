@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"slices"
 	"strings"
@@ -13,6 +14,13 @@ import (
 
 var ActivePassage Passage
 var Model *textEngine
+
+var dontEval = util.Some[engine.StagingFunc](func (s core.Scheme, e *engine.Engine) error {
+	for _,arg := range s.Params() {
+		e.Push(arg)
+	}
+	return nil
+})
 
 func Register(eng *textEngine) {
 	Model = eng
@@ -37,14 +45,7 @@ func Register(eng *textEngine) {
         engine.Builtin{
             VarArgs: true,
             Call: NewPassage,
-            Prepare: util.Some[engine.StagingFunc](
-                func(s core.Scheme, e *engine.Engine) error {
-                    for _,arg := range s.Params() {
-                        e.Push(arg)
-                    }
-                    return nil
-                },
-            ),
+            Prepare: dontEval,
         },
     )
 	eng.engine.AddFunc(
@@ -52,17 +53,13 @@ func Register(eng *textEngine) {
 		engine.Builtin{
 			VarArgs: true,
 			Call: LoadHook,
-			Prepare: util.Some[engine.StagingFunc](
-				func(s core.Scheme, e *engine.Engine) error {
-					for _,arg := range s.Params() {
-						e.Push(arg)
-					}
-
-					return nil
-				},
-			),
+			Prepare: dontEval,
 		},
 	)
+	eng.engine.AddFunc("set!", engine.Builtin{Args: []core.Type{ core.Symbol, core.Any }, Call: Set, Prepare: dontEval})
+
+	eng.engine.AddFunc("set-text!", engine.Builtin{VarArgs: true, Call: SetText})
+	eng.engine.AddFunc("if", engine.Builtin{VarArgs: true, Call: If, Prepare: dontEval})
 
 	eng.engine.AddFunc("text", engine.Builtin{VarArgs: true, Call: NewText})
 		eng.engine.AddFunc("ul", engine.Builtin{VarArgs: true, Call: UnderlineText})
@@ -70,9 +67,82 @@ func Register(eng *textEngine) {
 	eng.engine.AddFunc("choice", engine.Builtin{VarArgs: true, Call: NewChoice})
 	eng.engine.AddFunc("readline", engine.Builtin{Call: Readline})
 
+	eng.engine.AddFunc("begin", engine.Builtin{VarArgs: true, Call: Begin})
+
+	eng.engine.AddFunc("clear-text!", engine.Builtin{Args: []core.Type{}, Call: ClearText})
+
 	eng.engine.AddFunc("dark-gray", engine.Builtin{Args: []core.Type{core.String}, Call: ColorFn("dark-gray")})
 	eng.engine.AddFunc("green", engine.Builtin{Args: []core.Type{core.String}, Call: ColorFn("green")})
 	eng.engine.AddFunc("red", engine.Builtin{Args: []core.Type{core.String}, Call: ColorFn("red")})
+}
+
+func Set(e *engine.Engine) error {
+	val,_ := e.Pop()
+	if err := e.Evaluate(val); err != nil {
+		return err
+	}
+
+	newVal := util.Assert(e.Pop())
+	name := util.Assert(e.Pop()).Value.(string)
+	e.SetVar(name, newVal)
+	return nil
+}
+
+func Begin(e *engine.Engine) error {
+	return nil
+}
+
+func SetText(e *engine.Engine) error  {
+	args := varArgAsArgv(e)
+
+	var out string
+	for _,arg := range args {
+		out += core.SprintUnit(arg)
+	}
+
+	currPassage := Model.passages[Model.currPassage];
+	currPassage.text = out;
+	Model.passages[Model.currPassage] = currPassage
+
+	return nil
+}
+
+func ClearText(e *engine.Engine) error  {
+	currPassage := Model.passages[Model.currPassage];
+	currPassage.text = "";
+	Model.passages[Model.currPassage] = currPassage
+
+	return nil
+}
+
+func If(e *engine.Engine) error  {
+	args := varArgAsArgv(e)
+	e.Evaluate(args[0])
+
+	var cond bool
+
+	if v,err := e.Pop(); err != nil || v.Type != core.Bool {
+		return errors.New("condition did not yield a boolean value")
+	} else {
+		cond = v.Value.(bool)
+	}
+
+	onTrue := args[1].Value.(core.Scheme)
+
+	var onFalse core.Scheme
+	if len(args) == 3 {
+		onFalse = args[2].Value.(core.Scheme)
+	}
+
+	if cond {
+		e.Evaluate(core.MkScheme(onTrue))
+	} else {
+		if len(onFalse.Args) != 0 {
+			e.Evaluate(core.MkScheme(onFalse))
+		}
+	}
+
+	return nil
 }
 
 func ColorFn(color string) engine.BuiltinExec {
@@ -124,25 +194,20 @@ func LoadHook(eng *engine.Engine) error {
 }
 
 func NewChoice(eng *engine.Engine) error {
-	first := util.Assert(eng.Pop())
-	var hook core.Scheme
-	var text string
-	if first.Type == core.SchemeType {
-		hook = first.Value.(core.Scheme)
-		text,_ = util.Assert(eng.Pop()).Value.(string)
+	args := varArgAsArgv(eng)
+	target := args[0].Value.(string)
+	text := args[1].Value.(string)
+	var hook util.Option[core.Scheme]
+	if len(args) > 2 {
+		hook = util.Some(args[2].Value.(core.Scheme))
 	} else {
-		text,_ = first.Value.(string)
-	}
-	target := util.Assert(eng.Pop()).Value.(string)
-
-	if val, err := eng.Pop(); err == nil {
-		hook = val.Value.(core.Scheme)
+		hook = util.None[core.Scheme]()
 	}
 
 	ActivePassage.choices = append(ActivePassage.choices, Choice{
 		value:  text,
 		target: target,
-		hook:   &hook,
+		hook:   hook,
 	})
 
 	return nil
@@ -208,7 +273,9 @@ func NewPassage(eng *engine.Engine) error {
 	}
 
 	Model.passages[passageName] = ActivePassage
-	ActivePassage = Passage{}
+	ActivePassage = Passage{
+		hook: util.None[core.Scheme](),
+	}
 
 	return nil
 }

@@ -51,6 +51,10 @@ func (m *textEngine) loadStory() {
 			log.Infof("Start passage: %# v", pretty.Formatter(pass))
 		}
 	}
+
+	m.passages["__unknown_passage"] = Passage {
+		text: "ERROR: That choice linked to a non-existant passage\nSee the log file for more details",
+	}
 }
 
 func (m *textEngine) choiceUp() {
@@ -70,26 +74,29 @@ func (m *textEngine) choiceDown() {
 }
 
 func (m *textEngine) commitChoice() {
-    if len(m.passages[m.currPassage].choices) != 0 {
-        choice := m.passages[m.currPassage].choices[m.choiceIdx]
+	currPassage := m.passages[m.currPassage]
 
-        if choice.hook != nil {
-            if err := m.engine.Evaluate(core.MkScheme(*choice.hook)); err != nil {
-                log.Errorf("Failed to load '%s': %v", choice.target, err)
+    if len(currPassage.choices) != 0 {
+        choice := currPassage.choices[m.choiceIdx]
+
+        if hook,err := choice.hook.Try(); err == nil {
+            if err := m.engine.Evaluate(core.MkScheme(hook)); err != nil {
+                log.Errorf("Passage %s: Failed run hook for choice '%s': %v", m.currPassage, choice.value, err)
             }
         }
 
         last := m.currPassage
-        if val, ok := m.passages[choice.target]; !ok {
+        if _, ok := m.passages[choice.target]; !ok {
             log.Errorf("Undefined passage %v", choice.target)
+			m.currPassage = "__unknown_passage"
         } else {
-            m.passages[m.currPassage] = val
+            m.currPassage = choice.target
         }
 
-        if hook,err := m.passages[m.currPassage].hook.Try(); err == nil {
+        if hook,err := currPassage.hook.Try(); err == nil {
             if err := m.engine.Evaluate(core.MkScheme(hook)); err != nil {
                 log.Errorf("Failed to load '%s': %v", choice.target, err)
-                m.passages[m.currPassage] = m.passages[last]
+                currPassage = m.passages[last]
             }
         }
     }

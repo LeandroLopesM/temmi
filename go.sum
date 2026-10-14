@@ -49,6 +49,8 @@ github.com/leandrolopesm/eunuch v0.25.1 h1:pmZlcJyZaoc/UPEcBATI3UwhKkuy0VyJlVQ6H
 github.com/leandrolopesm/eunuch v0.25.1/go.mod h1:paq0FxSonVuULVNx9bUEPziIkendQUe/YQoyyMh61OE=
 github.com/leandrolopesm/eunuch v0.25.2 h1:9rfkSRkCG7hSGa3orzGYCKTlyRQTOKMgCcbVfn5ufA0=
 github.com/leandrolopesm/eunuch v0.25.2/go.mod h1:paq0FxSonVuULVNx9bUEPziIkendQUe/YQoyyMh61OE=
+github.com/leandrolopesm/eunuch v0.25.3 h1:HaINrmGLqev45SvvwVupm3z/FLjHFTw/6mwbN+KYaUU=
+github.com/leandrolopesm/eunuch v0.25.3/go.mod h1:paq0FxSonVuULVNx9bUEPziIkendQUe/YQoyyMh61OE=
 github.com/logrusorgru/aurora/v4 v4.0.0 h1:sRjfPpun/63iADiSvGGjgA1cAYegEWMPCJdUpJYn9JA=
 github.com/logrusorgru/aurora/v4 v4.0.0/go.mod h1:lP0iIa2nrnT/qoFXcOZSrZQpJ1o6n2CUf/hyHi2Q4ZQ=
 github.com/lucasb-eyer/go-colorful v1.4.1 h1:1EO+WB73+EH8EVbzlrG3KLAfEypQWVHIBqlTf+2hNss=

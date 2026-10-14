@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 
@@ -26,11 +27,11 @@ var windowSize tea.WindowSizeMsg
 type Choice struct {
 	value  string
 	target string
-	hook   *eunuch.Scheme
+	hook   util.Option[eunuch.Scheme]
 }
 
 type Passage struct {
-	image   string
+	id   	string
 	hook    util.Option[eunuch.Scheme]
 	text    string
 	choices []Choice
@@ -41,13 +42,13 @@ type model struct {
 	ready bool
 }
 
-func initState() model {
+func initState(file, passage string) model {
 	m := model{
 		backend: textEngine {
 			engine:      engine.New(),
 			passages:    make(map[string]Passage),
-			currPassage: "start",
-			storyFile:   "default-story.scm",
+			currPassage: passage,
+			storyFile:   file,
 
 			lineReader: readline {
 				reader: textinput.New(),
@@ -112,8 +113,18 @@ func main() {
 	log.SetLevel(log.DebugLevel)
 	log.SetOutput(f)
 
-	m := initState()
+	var storyFile = flag.String("file", "default-story.scm", "Story file")
+	var passage = flag.String("start", "start", "Passage to start from")
+	var help = flag.Bool("help", false, "Help message")
 
+	flag.Parse()
+
+	if *help {
+		flag.Usage()
+		return
+	}
+
+	m := initState(*storyFile, *passage)
 	p := tea.NewProgram(m)
 
 	if _, err := p.Run(); err != nil {
