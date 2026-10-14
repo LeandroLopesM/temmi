@@ -31,7 +31,6 @@ type Choice struct {
 }
 
 type Passage struct {
-	id   	string
 	hook    util.Option[eunuch.Scheme]
 	text    string
 	choices []Choice
@@ -60,7 +59,7 @@ func initState(file, passage string) model {
 
 	m.backend.lineReader.reader.CharLimit = 156
 
-	m.backend.loadStory()
+	m.backend.LoadStory()
 	return m
 }
 
@@ -129,6 +128,5 @@ func main() {
 
 	if _, err := p.Run(); err != nil {
 		fmt.Printf("Alas, there's been an error: %v", err)
-		os.Exit(1)
 	}
 }

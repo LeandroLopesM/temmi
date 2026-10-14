@@ -9,33 +9,34 @@ func autoWrapLines(rawStr string, maxWidth int) string {
 		return rawStr
 	}
 
-	var out string
+	var out = strings.Builder{}
 
-	for _, line := range strings.Split(rawStr, "\n") {
-		var brokenLine string
+	for line := range strings.SplitSeq(rawStr, "\n") {
+		var brokenLine = strings.Builder{}
 
 		spaceLeft := maxWidth
 
 		if len(line) > maxWidth {
-			for _, word := range strings.Split(line, " ") {
+			for word := range strings.SplitSeq(line, " ") {
 				if len(word)+1 > spaceLeft {
-					brokenLine += "\n"
+					brokenLine.WriteRune('\n')
 					spaceLeft = maxWidth - len(word)
 				} else {
-					brokenLine += " "
+					brokenLine.WriteRune(' ')
 					spaceLeft -= len(word) + 1
 				}
 
-                brokenLine += word
+                brokenLine.WriteString(word)
 			}
 		} else {
-            brokenLine = line
+            brokenLine.WriteString(line)
         }
 
-		out += "\n" + brokenLine
+		out.WriteRune('\n');
+		out.WriteString(brokenLine.String())
 	}
 
-	return out
+	return out.String()
 }
 
 func tryWrapLines(str string) string {

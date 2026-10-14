@@ -33,9 +33,7 @@ func Register(eng *textEngine) {
             Prepare: util.Some[engine.StagingFunc](
                 func(s core.Scheme, e *engine.Engine) error {
 		            e.Push(s.Params()[0])
-		            e.Evaluate(s.Params()[1])
-
-                    return nil
+		            return e.Evaluate(s.Params()[1])
 	            },
             ),
         },
@@ -95,13 +93,13 @@ func Begin(e *engine.Engine) error {
 func SetText(e *engine.Engine) error  {
 	args := varArgAsArgv(e)
 
-	var out string
+	var out = strings.Builder{}
 	for _,arg := range args {
-		out += core.SprintUnit(arg)
+		out.WriteString(core.SprintUnit(arg))
 	}
 
 	currPassage := Model.passages[Model.currPassage];
-	currPassage.text = out;
+	currPassage.text = out.String();
 	Model.passages[Model.currPassage] = currPassage
 
 	return nil
@@ -136,10 +134,8 @@ func If(e *engine.Engine) error  {
 
 	if cond {
 		e.Evaluate(core.MkScheme(onTrue))
-	} else {
-		if len(onFalse.Args) != 0 {
-			e.Evaluate(core.MkScheme(onFalse))
-		}
+	} else if len(onFalse.Args) != 0 {
+		e.Evaluate(core.MkScheme(onFalse))
 	}
 
 	return nil
@@ -156,7 +152,7 @@ func ColorFn(color string) engine.BuiltinExec {
 		case "green":
 			e.Push(core.MkString(aurora.Green(str.Value.(string)).String()))
 		default:
-			return fmt.Errorf("Unknown color '%s'", color)
+			return fmt.Errorf("unknown color '%s'", color)
 		}
 
 		return nil
@@ -215,23 +211,26 @@ func NewChoice(eng *engine.Engine) error {
 
 func collectText(eng *engine.Engine) string {
 	args := varArgAsArgv(eng)
-	var out string
+	var out = strings.Builder{}
 	for _,arg := range args {
-		out += core.SprintUnit(arg) + " "
+		// The linter SWEARS this is more efficient
+		// than out += core.(...) + " "
+		out.WriteString(core.SprintUnit(arg));
+		out.WriteString(" ")
 	}
 	// Remove trailing ' '
-	out = string([]rune(out)[:len(out)-1])
-	return out
+	outStr := out.String()
+	return string([]rune(outStr)[:len(outStr)-1])
 }
 
 func UnderlineText(eng *engine.Engine) error {
-	var out string = collectText(eng)
+	var out = collectText(eng)
 	eng.Push(core.MkString(aurora.Underline(out).String()))
 	return nil
 }
 
 func BoldText(eng *engine.Engine) error {
-	var out string = collectText(eng)
+	var out = collectText(eng)
 	eng.Push(core.MkString(aurora.Bold(out).String()))
 	return nil
 }
@@ -249,14 +248,13 @@ func NewText(eng *engine.Engine) error {
 
 	idx := len(args) - 1
 
-	var stringOut string
+	var stringOut = strings.Builder{}
 	for idx >= 0 {
-		stringOut += core.SprintUnit(args[idx])
+		stringOut.WriteString(core.SprintUnit(args[idx]))
 		idx--
 	}
 
-    stringOut = strings.ReplaceAll(stringOut, "\\n", "\n")
-	ActivePassage.text += stringOut
+	ActivePassage.text += strings.ReplaceAll(stringOut.String(), "\\n", "\n")
 
 	return nil
 }
