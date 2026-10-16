@@ -51,6 +51,8 @@ github.com/leandrolopesm/eunuch v0.25.2 h1:9rfkSRkCG7hSGa3orzGYCKTlyRQTOKMgCcbVf
 github.com/leandrolopesm/eunuch v0.25.2/go.mod h1:paq0FxSonVuULVNx9bUEPziIkendQUe/YQoyyMh61OE=
 github.com/leandrolopesm/eunuch v0.25.3 h1:HaINrmGLqev45SvvwVupm3z/FLjHFTw/6mwbN+KYaUU=
 github.com/leandrolopesm/eunuch v0.25.3/go.mod h1:paq0FxSonVuULVNx9bUEPziIkendQUe/YQoyyMh61OE=
+github.com/leandrolopesm/eunuch v0.26.1 h1:sb/pTzTcKStguHHrYv3nmkUy81U6Dw8eypgfpWsvrPQ=
+github.com/leandrolopesm/eunuch v0.26.1/go.mod h1:paq0FxSonVuULVNx9bUEPziIkendQUe/YQoyyMh61OE=
 github.com/logrusorgru/aurora/v4 v4.0.0 h1:sRjfPpun/63iADiSvGGjgA1cAYegEWMPCJdUpJYn9JA=
 github.com/logrusorgru/aurora/v4 v4.0.0/go.mod h1:lP0iIa2nrnT/qoFXcOZSrZQpJ1o6n2CUf/hyHi2Q4ZQ=
 github.com/lucasb-eyer/go-colorful v1.4.1 h1:1EO+WB73+EH8EVbzlrG3KLAfEypQWVHIBqlTf+2hNss=
@@ -69,6 +71,8 @@ github.com/muesli/termenv v0.16.0 h1:S5AlUN9dENB57rsbnkPyfdGuWIlkmzJjbFf0Tf5FWUc
 github.com/muesli/termenv v0.16.0/go.mod h1:ZRfOIKPFDYQoDFF4Olj7/QJbW60Ol/kL1pU3VfY/Cnk=
 github.com/nyaosorg/go-readline-ny v1.16.1 h1:Jc2UcLF5mYIunaWCT2OBQRMCR/eIZgmd/X51d3h/ktg=
 github.com/nyaosorg/go-readline-ny v1.16.1/go.mod h1:RzGwcAMFaVrCtX/NAagyDuOeP0m8rWTqQm2CiXOpIk0=
+github.com/nyaosorg/go-readline-ny v1.16.2 h1:YFRalZCf1MjgfqaipQeBjz1U6zq3od0yKvXlFYtgSR0=
+github.com/nyaosorg/go-readline-ny v1.16.2/go.mod h1:RzGwcAMFaVrCtX/NAagyDuOeP0m8rWTqQm2CiXOpIk0=
 github.com/nyaosorg/go-ttyadapter v0.7.0 h1:iBOlx7WJ+A0Fn1x28qYJNedjiFt/kWivlrn1+PTSViU=
 github.com/nyaosorg/go-ttyadapter v0.7.0/go.mod h1:w6ySb/Y8rpr0uIju4vN/TMRHC/6ayabORHmEVs6d/qE=
 github.com/pkg/diff v0.0.0-20210226163009-20ebb0f2a09e/go.mod h1:pJLUxLENpZxwdsKMEsNbx1VGcRFpLqf3715MtcvvzbA=
@@ -86,6 +90,8 @@ golang.org/x/exp v0.0.0-20231006140011-7918f672742d h1:jtJma62tbqLibJ5sFQz8bKtEM
 golang.org/x/exp v0.0.0-20231006140011-7918f672742d/go.mod h1:ldy0pHrwJyGW56pPQzzkH36rKxoZW1tw7ZJpeKx+hdo=
 golang.org/x/exp v0.0.0-20261013213113-2ab7f3cbc5fb h1:fMK59tNbIKghD6eTnk7DGfVtbK6JiHiFgpmBAWcPaco=
 golang.org/x/exp v0.0.0-20261013213113-2ab7f3cbc5fb/go.mod h1:DBoxwWhjaW8DJJw/YeM4zpeOKMC1FMXSblsYy+1mFSw=
+golang.org/x/exp v0.0.0-20261014143641-f0251eb4aa3e h1:HgI6W1OolKK6tcV74is+rl9SMT0njsHlp0TbQiGXI/A=
+golang.org/x/exp v0.0.0-20261014143641-f0251eb4aa3e/go.mod h1:DBoxwWhjaW8DJJw/YeM4zpeOKMC1FMXSblsYy+1mFSw=
 golang.org/x/sync v0.22.0 h1:SZjpbeLmrCk4xhRSZFNZW5gFUeCeFgjekvI/+gfScek=
 golang.org/x/sync v0.22.0/go.mod h1:9xrNwdLfx4jkKbNva9FpL6vEN7evnE43NNNJQ2LF3+0=
 golang.org/x/sync v0.24.0 h1:iqiDrGoDgyuvAKrhLQthUEzU/R378N78gXbBjxed7oA=

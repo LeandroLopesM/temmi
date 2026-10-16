@@ -12,8 +12,8 @@ import (
 	"github.com/logrusorgru/aurora/v4"
 )
 
-var ActivePassage Passage
 var Model *textEngine
+var PassageBuilderTarget *Passage
 
 var dontEval = util.Some[engine.StagingFunc](func (s core.Scheme, e *engine.Engine) error {
 	for _,arg := range s.Params() {

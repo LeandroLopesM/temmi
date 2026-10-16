@@ -1,4 +1,4 @@
-module github.com/leandrolopesm/game
+module github.com/leandrolopesm/temmi
 
 go 1.27.2
 
@@ -7,7 +7,7 @@ require (
 	charm.land/bubbletea/v2 v2.1.0
 	github.com/charmbracelet/log v1.0.0
 	github.com/kr/pretty v0.3.1
-	github.com/leandrolopesm/eunuch v0.25.3
+	github.com/leandrolopesm/eunuch v0.26.1
 	github.com/logrusorgru/aurora/v4 v4.0.0
 )
 
@@ -33,12 +33,12 @@ require (
 	github.com/mattn/go-tty v0.0.8 // indirect
 	github.com/muesli/cancelreader v0.2.2 // indirect
 	github.com/muesli/termenv v0.16.0 // indirect
-	github.com/nyaosorg/go-readline-ny v1.16.1 // indirect
+	github.com/nyaosorg/go-readline-ny v1.16.2 // indirect
 	github.com/nyaosorg/go-ttyadapter v0.7.0 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/rogpeppe/go-internal v1.9.0 // indirect
 	github.com/xo/terminfo v1.2.0 // indirect
-	golang.org/x/exp v0.0.0-20261013213113-2ab7f3cbc5fb // indirect
+	golang.org/x/exp v0.0.0-20261014143641-f0251eb4aa3e // indirect
 	golang.org/x/sync v0.24.0 // indirect
 	golang.org/x/sys v0.49.0 // indirect
 	golang.org/x/term v0.47.0 // indirect
