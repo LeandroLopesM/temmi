@@ -4,7 +4,7 @@ import (
 	"strings"
 )
 
-func autoWrapLines(rawStr string, maxWidth int) string {
+func GreedyWrap(rawStr string, maxWidth int) string {
 	if len(rawStr) < maxWidth {
 		return rawStr
 	}
@@ -41,11 +41,19 @@ func autoWrapLines(rawStr string, maxWidth int) string {
 
 func tryWrapLines(str string) string {
     if optWrapLines {
-		if optResponsive {
-			return autoWrapLines(str, windowSize.Width)
-		} else {
-			return autoWrapLines(str, optLineWidth)
+		// return autoWrapLines(str, windowSize.Width)
+		var out string
+		for line := range strings.SplitSeq(str, "\n") {
+			out += strings.Join(
+				KnuthPlass(
+						strings.Split(line, " "),
+				optLineWidth),
+			"\n")
+
+			out += "\n"
 		}
+
+		return out
 	}
 
     return str

@@ -7,7 +7,7 @@ require (
 	charm.land/bubbletea/v2 v2.1.0
 	github.com/charmbracelet/log v1.0.0
 	github.com/kr/pretty v0.3.1
-	github.com/leandrolopesm/eunuch v0.26.1
+	github.com/leandrolopesm/eunuch v0.27.0
 	github.com/logrusorgru/aurora/v4 v4.0.0
 )
 

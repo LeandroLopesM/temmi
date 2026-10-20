@@ -1,15 +1,15 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"os"
 
-	"charm.land/bubbles/v2/textinput"
 	tea "charm.land/bubbletea/v2"
 	"github.com/charmbracelet/log"
+	"github.com/leandrolopesm/eunuch/core"
 	"github.com/leandrolopesm/eunuch/engine"
-	eunuch "github.com/leandrolopesm/eunuch/lib"
 	"github.com/leandrolopesm/eunuch/util"
 )
 
@@ -22,42 +22,37 @@ var (
 	optLineWidth int = 50
 )
 
+var (
+	glbReady = false
+)
+
 var windowSize tea.WindowSizeMsg
 
 type Choice struct {
 	value  string
 	target string
-	hook   util.Option[eunuch.Scheme]
+	hook   core.Value
 }
 
 type Passage struct {
-	hook    util.Option[eunuch.Scheme]
+	hook    core.Value
 	text    string
 	choices []Choice
 }
 
 type model struct {
 	backend textEngine
-	ready bool
 }
 
-func initState(file, passage string) model {
+func initState(file string) model {
 	m := model{
 		backend: textEngine {
 			engine:      engine.New(),
-			passages:    make(map[string]Passage),
-			currPassage: passage,
+			passages:    make(map[string][]core.Value),
+			currPassage: Passage{},
 			storyFile:   file,
-
-			lineReader: readline {
-				reader: textinput.New(),
-				active: false,
-			},
 		},
-		ready: false,
 	};
-
-	m.backend.lineReader.reader.CharLimit = 156
 
 	m.backend.LoadStory()
 	return m
@@ -70,10 +65,13 @@ func (m model) Init() tea.Cmd {
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
-		if !m.ready {m.ready = true}
-		windowSize = msg
+		if !glbReady {
+			if optResponsive {
+				optLineWidth = msg.Width
+			}
 
-		m.backend.lineReader.reader.SetWidth(msg.Width)
+			glbReady = true
+		}
 	case tea.KeyPressMsg:
 		switch msg.String() {
 		case "ctrl+c", "ctrl+d", "q":
@@ -88,45 +86,50 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	}
 
-	var cmd tea.Cmd
-	m.backend.lineReader.reader, cmd = m.backend.lineReader.reader.Update(msg)
-	return m, cmd
+	return m, nil
 }
 
 func (m model) View() tea.View {
-	var str string
-	if !m.ready {
-		str = "Initializing...\n"
-	} else {
-		str = m.backend.View()
-	}
+	str := m.backend.View()
 
 	return tea.NewView(str)
 }
 
 func main() {
-	f := util.Assert(os.OpenFile("stderr.log", os.O_WRONLY|os.O_CREATE, 0644))
+	var storyFile = flag.String("file", "NONE", "Story file")
+	var help = flag.Bool("help", false, "Help message")
+
+	flag.Parse()
+
+	if *help || *storyFile == "NONE" {
+		flag.Usage()
+		return
+	}
+
+	f := openLogFile(*storyFile)
 	defer f.Close()
 
 	log.SetReportTimestamp(false)
 	log.SetLevel(log.DebugLevel)
 	log.SetOutput(f)
 
-	var storyFile = flag.String("file", "default-story.scm", "Story file")
-	var passage = flag.String("start", "start", "Passage to start from")
-	var help = flag.Bool("help", false, "Help message")
 
-	flag.Parse()
-
-	if *help {
-		flag.Usage()
-		return
-	}
-
-	m := initState(*storyFile, *passage)
+	m := initState(*storyFile)
 	p := tea.NewProgram(m)
 
 	if _, err := p.Run(); err != nil {
-		fmt.Printf("Alas, there's been an error: %v", err)
+		fmt.Printf("There's been an error: %v", err)
+	}
+}
+
+func openLogFile(storyName string) *os.File {
+	var i = 0
+	for {
+		fileName := fmt.Sprintf("%s-%d.log", storyName, i)
+		if _,err := os.Stat(fileName); err == nil {
+			i++
+		} else if errors.Is(err, os.ErrNotExist) {
+			return util.Assert(os.OpenFile(fileName, os.O_WRONLY|os.O_CREATE, 0644))
+		}
 	}
 }
