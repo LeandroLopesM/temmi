@@ -9,7 +9,9 @@
             (set! firstTime #f)
         )
     ; else
-        (set-text! "You walked around the tree " treeRounds " times."))
+        (text "You walked around the tree " treeRounds " times."))
+
+    (image "tree.png" resize lanczos)
 
     (choice "behind-tree" "Walk around the tree")
 )

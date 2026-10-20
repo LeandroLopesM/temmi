@@ -11,6 +11,18 @@ import (
 	"github.com/leandrolopesm/eunuch/lib"
 )
 
+type Choice struct {
+	value  string
+	target string
+	hook   core.Value
+}
+
+type Passage struct {
+	hook    core.Value
+	text    string
+	choices []Choice
+}
+
 type textEngine struct {
 	engine   lib.Engine
 	passages map[string]([]core.Value)
@@ -44,7 +56,7 @@ func (m *textEngine) LoadStory() {
 		}
 	}
 
-	rawValues,_ := m.engine.CompileStr("engine", "(passage \"__unknown_passage\" (text (red \"ERROR\") \": That choice linked to a non-existent passage\\nSee the log file for more details\"))")
+	rawValues, _ := m.engine.CompileStr("engine", "(passage \"__unknown_passage\" (text (red \"ERROR\") \": That choice linked to a non-existent passage\\nSee the log file for more details\"))")
 	m.passages["__unknown_passage"] = rawValues
 }
 
@@ -85,7 +97,7 @@ func (m *textEngine) loadPassage(passage string) {
 		log.Errorf("Undefined passage %v", passage)
 		m.loadPassage("__unknown_passage")
 	} else {
-		for _,scm := range program {
+		for _, scm := range program {
 			log.Debugf("Eval %s: %s", scm.TypeString(), scm.ToString())
 			if err := m.engine.Evaluate(scm); err != nil {
 				log.Errorf("Failed to load passage '%s': %s", passage, err)
@@ -96,28 +108,28 @@ func (m *textEngine) loadPassage(passage string) {
 
 func (m *textEngine) commitChoice() {
 	if len(m.currPassage.choices) != 0 {
-        choice := m.currPassage.choices[m.choiceIdx]
-        m.callChoiceHook(choice)
+		choice := m.currPassage.choices[m.choiceIdx]
+		m.callChoiceHook(choice)
 
 		m.loadPassage(choice.target)
 		m.choiceIdx = 0
-    }
+	}
 }
 
 func (m *textEngine) choiceUp() {
-    if m.choiceIdx-1 < 0 {
-        m.choiceIdx = len(m.currPassage.choices) - 1
-    } else {
-        m.choiceIdx--
-    }
+	if m.choiceIdx-1 < 0 {
+		m.choiceIdx = len(m.currPassage.choices) - 1
+	} else {
+		m.choiceIdx--
+	}
 }
 
 func (m *textEngine) choiceDown() {
-    if m.choiceIdx+1 > len(m.currPassage.choices) {
-        m.choiceIdx = 0
-    } else {
-        m.choiceIdx++
-    }
+	if m.choiceIdx+1 > len(m.currPassage.choices) {
+		m.choiceIdx = 0
+	} else {
+		m.choiceIdx++
+	}
 }
 
 func (m *textEngine) callChoiceHook(choice Choice) {

@@ -26,13 +26,13 @@ func GreedyWrap(rawStr string, maxWidth int) string {
 					spaceLeft -= len(word) + 1
 				}
 
-                brokenLine.WriteString(word)
+				brokenLine.WriteString(word)
 			}
 		} else {
-            brokenLine.WriteString(line)
-        }
+			brokenLine.WriteString(line)
+		}
 
-		out.WriteRune('\n');
+		out.WriteRune('\n')
 		out.WriteString(brokenLine.String())
 	}
 
@@ -40,15 +40,21 @@ func GreedyWrap(rawStr string, maxWidth int) string {
 }
 
 func tryWrapLines(str string) string {
-    if optWrapLines {
-		// return autoWrapLines(str, windowSize.Width)
+	if optWrapLines {
 		var out string
-		for line := range strings.SplitSeq(str, "\n") {
+		lines := strings.SplitSeq(str, "\n")
+
+		for line := range lines {
+			if strings.HasPrefix(line, "<img>") {
+				out += line[5:] + "\n"
+				continue
+			}
+
 			out += strings.Join(
 				KnuthPlass(
-						strings.Split(line, " "),
-				optLineWidth),
-			"\n")
+					strings.Split(line, " "),
+					optLineWidth),
+				"\n")
 
 			out += "\n"
 		}
@@ -56,5 +62,5 @@ func tryWrapLines(str string) string {
 		return out
 	}
 
-    return str
+	return str
 }

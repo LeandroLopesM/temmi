@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/disintegration/imaging"
 	"github.com/leandrolopesm/eunuch/core"
 	"github.com/leandrolopesm/eunuch/engine"
 	"github.com/leandrolopesm/eunuch/util"
@@ -14,8 +15,8 @@ import (
 var Model *textEngine
 var PassageBuilderTarget *Passage
 
-var dontEval = util.Some[engine.StagingFunc](func (s core.Scheme, e *engine.Engine) error {
-	for _,arg := range s.Params() {
+var dontEval = util.Some[engine.StagingFunc](func(s core.Scheme, e *engine.Engine) error {
+	for _, arg := range s.Params() {
 		e.Push(arg)
 	}
 	return nil
@@ -25,30 +26,30 @@ func Register(eng *textEngine) {
 	Model = eng
 
 	eng.engine.AddFunc(
-        "set-opt!",
-        engine.Builtin{
-            Call: SetOpt,
-            Argc: 2,
-            Prepare: util.Some[engine.StagingFunc](
-                func(s core.Scheme, e *engine.Engine) error {
-		            e.Push(s.Params()[0])
-		            return e.Evaluate(s.Params()[1])
-	            },
-            ),
-        },
-    )
+		"set-opt!",
+		engine.Builtin{
+			Call: SetOpt,
+			Argc: 2,
+			Prepare: util.Some[engine.StagingFunc](
+				func(s core.Scheme, e *engine.Engine) error {
+					e.Push(s.Params()[0])
+					return e.Evaluate(s.Params()[1])
+				},
+			),
+		},
+	)
 	eng.engine.AddFunc(
-        "passage",
-        engine.Builtin{
-            Call: NewPassage,
-            VarArgs: true,
-            Prepare: dontEval,
-        },
-    )
+		"passage",
+		engine.Builtin{
+			Call:    NewPassage,
+			VarArgs: true,
+			Prepare: dontEval,
+		},
+	)
 	eng.engine.AddFunc(
 		"on-load",
 		engine.Builtin{
-			Call: LoadHook,
+			Call:    LoadHook,
 			VarArgs: true,
 			Prepare: dontEval,
 		},
@@ -59,8 +60,8 @@ func Register(eng *textEngine) {
 	eng.engine.AddFunc("if", engine.Builtin{VarArgs: true, Call: If, Prepare: dontEval})
 
 	eng.engine.AddFunc("text", engine.Builtin{VarArgs: true, Call: NewText})
-		eng.engine.AddFunc("ul", engine.Builtin{VarArgs: true, Call: UnderlineText})
-		eng.engine.AddFunc("bold", engine.Builtin{VarArgs: true, Call: BoldText})
+	eng.engine.AddFunc("ul", engine.Builtin{VarArgs: true, Call: UnderlineText})
+	eng.engine.AddFunc("bold", engine.Builtin{VarArgs: true, Call: BoldText})
 	eng.engine.AddFunc("choice", engine.Builtin{VarArgs: true, Call: NewChoice})
 
 	eng.engine.AddFunc("begin", engine.Builtin{VarArgs: true, Call: Begin})
@@ -70,10 +71,12 @@ func Register(eng *textEngine) {
 	eng.engine.AddFunc("dark-gray", engine.Builtin{Argc: 1, Call: ColorFn("dark-gray")})
 	eng.engine.AddFunc("green", engine.Builtin{Argc: 1, Call: ColorFn("green")})
 	eng.engine.AddFunc("red", engine.Builtin{Argc: 1, Call: ColorFn("red")})
+
+	eng.engine.AddFunc("image", engine.Builtin{VarArgs: true, Call: Image, Prepare: dontEval})
 }
 
 func Set(e *engine.Engine) error {
-	val,_ := e.Pop()
+	val, _ := e.Pop()
 	if err := e.Evaluate(val); err != nil {
 		return err
 	}
@@ -88,34 +91,34 @@ func Begin(e *engine.Engine) error {
 	return nil
 }
 
-func SetText(e *engine.Engine) error  {
+func SetText(e *engine.Engine) error {
 	args := e.GenArgv()
 
 	var out = strings.Builder{}
-	for _,arg := range args {
+	for _, arg := range args {
 		out.WriteString(arg.ToString())
 	}
 
-	Model.currPassage.text = out.String();
+	Model.currPassage.text = out.String()
 
 	return nil
 }
 
-func ClearText(e *engine.Engine) error  {
-	currPassage := Model.currPassage;
-	currPassage.text = "";
+func ClearText(e *engine.Engine) error {
+	currPassage := Model.currPassage
+	currPassage.text = ""
 	Model.currPassage = currPassage
 
 	return nil
 }
 
-func If(e *engine.Engine) error  {
+func If(e *engine.Engine) error {
 	args := e.GenArgv()
 	e.Evaluate(args[0])
 
 	var cond bool
 
-	if v,err := e.Pop(); err != nil || v.TypeString() != "Bool" {
+	if v, err := e.Pop(); err != nil || v.TypeString() != "Bool" {
 		return errors.New("condition did not yield a boolean value")
 	} else {
 		cond = bool(v.(core.Bool))
@@ -139,7 +142,7 @@ func If(e *engine.Engine) error  {
 
 func ColorFn(color string) engine.BuiltinExec {
 	return func(e *engine.Engine) error {
-		str,_ := e.Pop()
+		str, _ := e.Pop()
 		switch color {
 		case "red":
 			e.Push(core.String(aurora.Red(str.ToString()).String()))
@@ -202,10 +205,10 @@ func NewChoice(eng *engine.Engine) error {
 func collectText(eng *engine.Engine) string {
 	args := eng.GenArgv()
 	var out = strings.Builder{}
-	for _,arg := range args {
+	for _, arg := range args {
 		// The linter SWEARS this is more efficient
 		// than out += core.(...) + " "
-		out.WriteString(arg.ToString());
+		out.WriteString(arg.ToString())
 		out.WriteString(" ")
 	}
 	// Remove trailing ' '
@@ -256,5 +259,46 @@ func NewPassage(eng *engine.Engine) error {
 
 	Model.passages[string(passageName)] = args[0:]
 
+	return nil
+}
+
+func Image(eng *engine.Engine) error {
+	args := eng.GenArgv()
+
+	imagePath := args[0].(core.String)
+
+	var (
+		insertKind FitType
+		resampler  imaging.ResampleFilter
+		ok         bool
+	)
+
+	if len(args) <= 1 {
+		insertKind = Resize
+	} else {
+		insertKind, ok = ftMap[string(args[1].(core.Symbol))]
+
+		if !ok {
+			return fmt.Errorf("Unknown fit type %v", args[1].ToString())
+		}
+	}
+
+	if len(args) <= 2 {
+		resampler = imaging.NearestNeighbor
+	} else {
+		resampler, ok = rsfMap[string(args[2].(core.Symbol))]
+
+		if !ok {
+			return fmt.Errorf("Unknown resampler type %v", args[2].ToString())
+		}
+	}
+
+	imgStr, err := GenImage(imagePath.ToString(), insertKind, resampler)
+
+	if err != nil {
+		return err
+	}
+
+	eng.Push(core.String(imgStr))
 	return nil
 }

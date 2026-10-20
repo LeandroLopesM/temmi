@@ -20,6 +20,8 @@ var (
 	optWrapLines bool = true
 	/// Fixed line width, won't have effect unless optResponsive == false
 	optLineWidth int = 50
+	// Character dictionary for displaying images
+	optImageChars = " .+#"
 )
 
 var (
@@ -28,31 +30,19 @@ var (
 
 var windowSize tea.WindowSizeMsg
 
-type Choice struct {
-	value  string
-	target string
-	hook   core.Value
-}
-
-type Passage struct {
-	hook    core.Value
-	text    string
-	choices []Choice
-}
-
 type model struct {
 	backend textEngine
 }
 
 func initState(file string) model {
 	m := model{
-		backend: textEngine {
+		backend: textEngine{
 			engine:      engine.New(),
 			passages:    make(map[string][]core.Value),
 			currPassage: Passage{},
 			storyFile:   file,
 		},
-	};
+	}
 
 	m.backend.LoadStory()
 	return m
@@ -72,6 +62,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			glbReady = true
 		}
+
+		windowSize = msg
 	case tea.KeyPressMsg:
 		switch msg.String() {
 		case "ctrl+c", "ctrl+d", "q":
@@ -113,7 +105,6 @@ func main() {
 	log.SetLevel(log.DebugLevel)
 	log.SetOutput(f)
 
-
 	m := initState(*storyFile)
 	p := tea.NewProgram(m)
 
@@ -126,7 +117,7 @@ func openLogFile(storyName string) *os.File {
 	var i = 0
 	for {
 		fileName := fmt.Sprintf("%s-%d.log", storyName, i)
-		if _,err := os.Stat(fileName); err == nil {
+		if _, err := os.Stat(fileName); err == nil {
 			i++
 		} else if errors.Is(err, os.ErrNotExist) {
 			return util.Assert(os.OpenFile(fileName, os.O_WRONLY|os.O_CREATE, 0644))
